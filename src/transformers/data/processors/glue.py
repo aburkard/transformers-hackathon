@@ -404,7 +404,7 @@ class CallRequestProcessor(DataProcessor):
                 guid=f"{set_type}-{x['candidate_id']}",
                 text_a=x['blurb'],
                 text_b=self._make_resume(x),
-                label=x['log_num_call_requests']
+                label=x['num_call_requests']
                 )
             for x in lines
         ]
@@ -446,7 +446,7 @@ class ProfileViewProcessor(DataProcessor):
                 guid=f"{set_type}-{x['candidate_id']}",
                 text_a=x['profile_headline'],
                 text_b='',
-                label=x['log_num_profile_views']
+                label=x['num_profile_views']
                 )
             for x in lines
         ]

@@ -74,6 +74,10 @@ if _has_sklearn:
             return {"acc": simple_accuracy(preds, labels)}
         elif task_name == "hans":
             return {"acc": simple_accuracy(preds, labels)}
+        elif task_name == "call_requests":
+            return pearson_and_spearman(preds, labels)
+        elif task_name == "profile_views":
+            return pearson_and_spearman(preds, labels)
         else:
             raise KeyError(task_name)
 
