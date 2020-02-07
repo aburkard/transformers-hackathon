@@ -21,7 +21,7 @@ import glob
 import json
 import logging
 import os
-from typing import List
+from typing import List, Dict
 
 import tqdm
 
@@ -80,6 +80,56 @@ class DataProcessor(object):
     def get_labels(self):
         """Gets the list of labels for this data set."""
         raise NotImplementedError()
+
+
+class QuizzQuestionProcessor(DataProcessor):
+    """Processor for the Triplebyte quiz question dataset."""
+
+    def get_train_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(self._read_json(os.path.join(data_dir, "train.json")), "train")
+
+    def get_dev_examples(self, data_dir):
+        """See base class."""
+        # We re-use the test set as the validation set :(
+        return self.get_test_examples(data_dir)
+
+    def get_test_examples(self, data_dir):
+        """See base class."""
+        return self._create_examples(self._read_json(os.path.join(data_dir, "test.json")), "test")
+
+    def get_labels(self):
+        """See base class."""
+        return ["0", "1", "2", "3"]
+
+    def _read_json(self, input_file):
+        with open(input_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _format_question(self, question):
+        text = question['question']
+        if question['code_block']:
+            text = " ".join([f"Language: {question['code_language']}", question['code_block'], text])
+        return text
+
+
+    def _create_examples(self, questions: List[Dict], type: str):
+        """Creates examples for the training and dev sets."""
+
+        examples = [
+            InputExample(
+                example_id=q['id'],
+                question="",  # in the swag dataset, the
+                # common beginning of each
+                # choice is stored in "sent2".
+                contexts=[self._format_question(q), self._format_question(q), self._format_question(q), self._format_question(q)],
+                endings=json.loads(q['answers']),
+                label=q['correct_answer'],
+            )
+            for q in questions
+        ]
+        examples = [e for e in examples if len(e.endings) == 4]
+        return examples
 
 
 class RaceProcessor(DataProcessor):
@@ -314,7 +364,7 @@ def convert_examples_to_features(
         choices_features = []
         for ending_idx, (context, ending) in enumerate(zip(example.contexts, example.endings)):
             text_a = context
-            if example.question.find("_") != -1:
+            if False and example.question.find("_") != -1:
                 # this is for cloze question
                 text_b = example.question.replace("_", ending)
             else:
@@ -367,7 +417,7 @@ def convert_examples_to_features(
     return features
 
 
-processors = {"race": RaceProcessor, "swag": SwagProcessor, "arc": ArcProcessor}
+processors = {"race": RaceProcessor, "swag": SwagProcessor, "arc": ArcProcessor, "quizz": QuizzQuestionProcessor}
 
 
 MULTIPLE_CHOICE_TASKS_NUM_LABELS = {"race", 4, "swag", 4, "arc", 4}
