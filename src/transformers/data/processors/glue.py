@@ -392,7 +392,7 @@ class CallRequestProcessor(DataProcessor):
 
     def _make_resume(self, x):
         for field in ['work',  'education', 'projects']:
-            if x['field']  is not None:
+            if x[field]  is not None:
                 text += f"\n{field.title()}: {x[field]}"
         return text
 
