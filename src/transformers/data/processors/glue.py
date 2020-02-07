@@ -391,6 +391,7 @@ class CallRequestProcessor(DataProcessor):
             return json.load(f)
 
     def _make_resume(self, x):
+        text = ""
         for field in ['work',  'education', 'projects']:
             if x[field]  is not None:
                 text += f"\n{field.title()}: {x[field]}"
